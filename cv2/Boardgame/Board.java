@@ -1,11 +1,9 @@
 package cv2.Boardgame;
-
-import java.util.Random;
 import java.util.Arrays;
+import java.util.Random;
 
 public class Board {
     private int[][] pole;
-    
     private int zeroRow;
     private int zeroCol;
 
@@ -19,6 +17,15 @@ public class Board {
         pole = new int[3][3];
         initializeBoard();
         shuffleBoard();
+    }
+
+    public Board(Board other) {
+        this.pole = new int[3][3];
+        for(int i=0; i<3; i++) {
+            System.arraycopy(other.pole[i], 0, this.pole[i], 0, 3);
+        }
+        this.zeroRow = other.zeroRow;
+        this.zeroCol = other.zeroCol;
     }
 
     private void initializeBoard() {
@@ -47,7 +54,7 @@ public class Board {
         int newCol = zeroCol;
 
         switch (direction.toLowerCase()) {
-            case "w": newRow--; break; 
+            case "w": newRow--; break;
             case "s": newRow++; break;
             case "a": newCol--; break;
             case "d": newCol++; break;
@@ -58,7 +65,6 @@ public class Board {
             int temp = pole[newRow][newCol];
             pole[newRow][newCol] = 0;
             pole[zeroRow][zeroCol] = temp;
-
             zeroRow = newRow;
             zeroCol = newCol;
         }
@@ -77,13 +83,24 @@ public class Board {
         for (int i = 0; i < 3; i++) {
             System.out.print("| ");
             for (int j = 0; j < 3; j++) {
-                if (pole[i][j] == 0) {
-                    System.out.print("  | ");
-                } else {
-                    System.out.print(pole[i][j] + " | ");
-                }
+                if (pole[i][j] == 0) System.out.print("  | ");
+                else System.out.print(pole[i][j] + " | ");
             }
             System.out.println("\n-------------");
         }
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Board board = (Board) o;
+        return Arrays.deepEquals(pole, board.pole);
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.deepHashCode(pole);
     }
 }
