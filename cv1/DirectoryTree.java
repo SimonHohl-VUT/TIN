@@ -3,7 +3,7 @@ public class DirectoryTree {
         Directory dir1 = new Directory("Directory1");
         Directory dir2 = new Directory("Directory2");
         Directory dir3 = new Directory("Directory3");
-        Directory dir4 = new Directory("Directory4");
+        Directory dir4 = new Directory("Directory4");DirectoryTree.java
         Directory dir5 = new Directory("Directory5");
         
         dir1.setChildren(dir4, dir2);
