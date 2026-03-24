@@ -1,61 +1,152 @@
 package cv2.Boardgame;
+
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.Set;
-import java.io.IOException;
 
 public class Game {
     public static void main(String[] args) {
         Board myBoard = new Board();
-        
-        // The Set to store history
-        Set<Board> history = new HashSet<>();
-        
-        // Add starting state
-        history.add(new Board(myBoard));
 
-        System.out.println("=== HashSet Puzzle Game ===");
-        System.out.println("Use W/A/S/D (no Enter needed).");
-        System.out.println("Press 'q' to quit.\n");
+        System.out.println("=== ZÁVOD ALGORITMŮ: BFS vs Dijkstra vs BestFS vs A* ===");
+        System.out.println("Počáteční stav pro všechny algoritmy:");
+        myBoard.print();
+        System.out.println("\nPočkejte prosím, algoritmy počítají...\n");
 
-        // Enable raw mode for immediate input
-        RawConsole.enableRawMode();
-        
-        try {
-            while (true) {
-                myBoard.print();
-                
-                // Show off the HashSet capability
-                System.out.println("Unique states visited: " + history.size());
+        solveBFS(myBoard);
+        solveDijkstra(myBoard);
+        solveBestFS(myBoard);
+        solveAStar(myBoard);
+    }
 
-                if (myBoard.isSolved()) {
-                    System.out.println("SOLVED!");
-                    break;
-                }
+    private static void solveBFS(Board startBoard) {
+        long startTime = System.currentTimeMillis();
+        Queue<Board> fronta = new LinkedList<>();
+        Set<Board> visited = new HashSet<>();
+        fronta.add(startBoard);
+        visited.add(startBoard);
+        int pocetProzkoumanychStavu = 0;
 
-                System.out.print("Move: ");
-                int charInput = System.in.read();
-                char input = (char) charInput;
+        while (!fronta.isEmpty()) {
+            Board aktualni = fronta.poll();
+            pocetProzkoumanychStavu++;
 
-                if (input == 'q' || input == 'Q') break;
+            if (aktualni.isSolved()) {
+                long endTime = System.currentTimeMillis();
+                vypisVysledek("BFS (Obyčejná fronta)", pocetProzkoumanychStavu, aktualni.getCesta(), endTime - startTime);
+                return;
+            }
 
-                if (input == 'w' || input == 'W' || 
-                    input == 'a' || input == 'A' || 
-                    input == 's' || input == 'S' || 
-                    input == 'd' || input == 'D') {
-                    System.out.println(input);
-                    myBoard.moveZero(String.valueOf(input));
-                    
-                    // Save the new state to history
-                    // We must create a NEW COPY, otherwise we just save a reference to the changing board
-                    history.add(new Board(myBoard));
+            for (Board potomek : aktualni.getNeighbors()) {
+                if (!visited.contains(potomek)) {
+                    visited.add(potomek);
+                    fronta.add(potomek);
                 }
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            // Always restore normal mode
-            RawConsole.disableRawMode();
-            System.out.println("\nGame ended.");
         }
+        System.out.println("BFS: Hlavolam nemá řešení.");
+    }
+
+    private static void solveDijkstra(Board startBoard) {
+        long startTime = System.currentTimeMillis();
+        Queue<Board> fronta = new PriorityQueue<>(Comparator.comparingInt(Board::getG));
+        Set<Board> visited = new HashSet<>();
+        fronta.add(startBoard);
+        visited.add(startBoard);
+        int pocetProzkoumanychStavu = 0;
+
+        while (!fronta.isEmpty()) {
+            Board aktualni = fronta.poll();
+            pocetProzkoumanychStavu++;
+
+            if (aktualni.isSolved()) {
+                long endTime = System.currentTimeMillis();
+                vypisVysledek("Dijkstra (F = g)", pocetProzkoumanychStavu, aktualni.getCesta(), endTime - startTime);
+                return;
+            }
+
+            for (Board potomek : aktualni.getNeighbors()) {
+                if (!visited.contains(potomek)) {
+                    visited.add(potomek);
+                    fronta.add(potomek);
+                }
+            }
+        }
+        System.out.println("Dijkstra: Hlavolam nemá řešení.");
+    }
+
+    private static void solveBestFS(Board startBoard) {
+        long startTime = System.currentTimeMillis();
+        Queue<Board> fronta = new PriorityQueue<>(Comparator.comparingInt(Board::getH));
+        Set<Board> visited = new HashSet<>();
+        fronta.add(startBoard);
+        visited.add(startBoard);
+        int pocetProzkoumanychStavu = 0;
+
+        while (!fronta.isEmpty()) {
+            Board aktualni = fronta.poll();
+            pocetProzkoumanychStavu++;
+
+            if (aktualni.isSolved()) {
+                long endTime = System.currentTimeMillis();
+                vypisVysledek("BestFS (F = h)", pocetProzkoumanychStavu, aktualni.getCesta(), endTime - startTime);
+                return;
+            }
+
+            for (Board potomek : aktualni.getNeighbors()) {
+                if (!visited.contains(potomek)) {
+                    visited.add(potomek);
+                    fronta.add(potomek);
+                }
+            }
+        }
+        System.out.println("BestFS: Hlavolam nemá řešení.");
+    }
+
+    private static void solveAStar(Board startBoard) {
+        long startTime = System.currentTimeMillis();
+        Queue<Board> fronta = new PriorityQueue<>(Comparator.comparingInt(Board::getF));
+        Set<Board> visited = new HashSet<>();
+        fronta.add(startBoard);
+        visited.add(startBoard);
+        int pocetProzkoumanychStavu = 0;
+
+        while (!fronta.isEmpty()) {
+            Board aktualni = fronta.poll();
+            pocetProzkoumanychStavu++;
+
+            if (aktualni.isSolved()) {
+                long endTime = System.currentTimeMillis();
+                vypisVysledek("A* (F = g + h)", pocetProzkoumanychStavu, aktualni.getCesta(), endTime - startTime);
+                return;
+            }
+
+            for (Board potomek : aktualni.getNeighbors()) {
+                if (!visited.contains(potomek)) {
+                    visited.add(potomek);
+                    fronta.add(potomek);
+                }
+            }
+        }
+        System.out.println("A*: Hlavolam nemá řešení.");
+    }
+
+    private static void vypisVysledek(String nazevAlgoritmu, int prozkoumano, String cesta, long casMs) {
+        cesta = cesta.trim();
+        int pocetKroku = cesta.isEmpty() ? 0 : cesta.split(" ").length;
+        
+        System.out.println("--- VÝSLEDEK: " + nazevAlgoritmu + " ---");
+        System.out.println("Prozkoumáno stavů: " + prozkoumano);
+        System.out.println("Čas výpočtu:       " + casMs + " ms");
+        System.out.println("Délka cesty:       " + pocetKroku + " tahů");
+        if (pocetKroku > 0 && pocetKroku <= 30) {
+            System.out.println("Samotná cesta:     " + cesta);
+        } else if (pocetKroku > 30) {
+            System.out.println("Samotná cesta:     (Příliš dlouhá pro výpis, obsahuje " + pocetKroku + " kroků)");
+        }
+        System.out.println();
     }
 }

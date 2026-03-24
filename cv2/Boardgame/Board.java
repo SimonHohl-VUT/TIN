@@ -1,11 +1,14 @@
 package cv2.Boardgame;
 import java.util.Arrays;
 import java.util.Random;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Board {
     private int[][] pole;
     private int zeroRow;
     private int zeroCol;
+    private String cesta = ""; 
 
     private final int[][] TARGET_STATE = {
         {0, 1, 2},
@@ -17,6 +20,7 @@ public class Board {
         pole = new int[3][3];
         initializeBoard();
         shuffleBoard();
+        this.cesta = "";
     }
 
     public Board(Board other) {
@@ -26,6 +30,7 @@ public class Board {
         }
         this.zeroRow = other.zeroRow;
         this.zeroCol = other.zeroCol;
+        this.cesta = other.cesta;
     }
 
     private void initializeBoard() {
@@ -67,7 +72,35 @@ public class Board {
             pole[zeroRow][zeroCol] = temp;
             zeroRow = newRow;
             zeroCol = newCol;
+            
+            this.cesta += direction.toUpperCase() + " "; 
         }
+    }
+
+    public String getCesta() {
+        return cesta;
+    }
+
+    public int getG() {
+        if (cesta.trim().isEmpty()) return 0;
+        return cesta.trim().split(" ").length;
+    }
+
+    public int getH() {
+        int spatneUmistenych = 0;
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                int hodnota = pole[i][j];
+                if (hodnota != 0 && hodnota != TARGET_STATE[i][j]) {
+                    spatneUmistenych++;
+                }
+            }
+        }
+        return spatneUmistenych;
+    }
+
+    public int getF() {
+        return getG() + getH();
     }
 
     private boolean isValid(int r, int c) {
@@ -79,6 +112,7 @@ public class Board {
     }
 
     public void print() {
+        System.out.println();
         System.out.println("-------------");
         for (int i = 0; i < 3; i++) {
             System.out.print("| ");
@@ -89,7 +123,28 @@ public class Board {
             System.out.println("\n-------------");
         }
     }
+    public List<Board> getNeighbors() {
+        List<Board> neighbors = new ArrayList<>();
+        String[] directions = {"w", "s", "a", "d"};
 
+        for (String dir : directions) {
+            int newRow = zeroRow;
+            int newCol = zeroCol;
+
+            switch (dir) {
+                case "w": newRow--; break;
+                case "s": newRow++; break;
+                case "a": newCol--; break;
+                case "d": newCol++; break;
+            }
+            if (isValid(newRow, newCol)) {
+                Board neighbor = new Board(this); 
+                neighbor.moveZero(dir);    
+                neighbors.add(neighbor);   
+            }
+        }
+        return neighbors;
+    }
 
     @Override
     public boolean equals(Object o) {
