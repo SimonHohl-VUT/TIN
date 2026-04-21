@@ -20,7 +20,7 @@ public class GraphRouter {
         }
         @Override
         public String toString() {
-            return String.format("%s -> %s (%.2f)", from.id(), to.id(), cost);
+            return String.format("%s -> %s (%.0f)", from.id(), to.id(), cost);
         }
     }
 
@@ -103,6 +103,68 @@ public class GraphRouter {
         }
 
         return new Path(routeNodes, routeEdges, totalCost);
+    }
+
+
+    public List<Edge> calculateKruskal() {
+        List<Edge> allEdges = new ArrayList<>();
+        Set<String> seenEdges = new HashSet<>();
+
+        for (Map<String, Edge> neighbors : adjacency.values()) {
+            for (Edge edge : neighbors.values()) {
+                String edgeId1 = edge.from().id() + "-" + edge.to().id();
+                String edgeId2 = edge.to().id() + "-" + edge.from().id();
+                
+                if (!seenEdges.contains(edgeId1) && !seenEdges.contains(edgeId2)) {
+                    allEdges.add(edge);
+                    seenEdges.add(edgeId1);
+                }
+            }
+        }
+
+        allEdges.sort(Comparator.comparingDouble(Edge::cost));
+
+        DisjointSet ds = new DisjointSet();
+        for (Node node : nodes.values()) {
+            ds.makeSet(node.id());
+        }
+
+        List<Edge> mst = new ArrayList<>();
+        
+        for (Edge edge : allEdges) {
+            String root1 = ds.find(edge.from().id());
+            String root2 = ds.find(edge.to().id());
+
+            if (!root1.equals(root2)) {
+                mst.add(edge);
+                ds.union(root1, root2);
+            }
+        }
+
+        return mst;
+    }
+
+    private static class DisjointSet {
+        private final Map<String, String> parent = new HashMap<>();
+
+        public void makeSet(String node) {
+            parent.put(node, node);
+        }
+
+        public String find(String node) {
+            if (!parent.get(node).equals(node)) {
+                parent.put(node, find(parent.get(node))); // Path compression
+            }
+            return parent.get(node);
+        }
+
+        public void union(String node1, String node2) {
+            String root1 = find(node1);
+            String root2 = find(node2);
+            if (!root1.equals(root2)) {
+                parent.put(root1, root2);
+            }
+        }
     }
 
     public Collection<Node> getNodes() {
